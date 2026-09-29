@@ -5,13 +5,16 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://github.com/example/platform-gitops.git
-    targetRevision: main
-    path: helm/platform-app
-    helm:
-      valueFiles:
-        - values-dev.yaml
+  sources:
+    - repoURL: https://github.com/bhargavasachin/gitops-cicd-platform.git
+      targetRevision: main
+      path: helm/platform-app
+      helm:
+        valueFiles:
+          - $values/gitops/environments/dev/values-dev.yaml
+    - repoURL: https://github.com/bhargavasachin/gitops-cicd-platform.git
+      targetRevision: main
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: platform-demo
