@@ -19,10 +19,7 @@ Jenkins CI  ---> tests / validation
 Container image + immutable tag
    |
    v
-Deployment configuration
-   |
-   v
-GitOps repository
+Versioned GitOps configuration
    |
    v
 Argo CD
@@ -45,8 +42,7 @@ The important separation is between **building an artifact** and **promoting tha
 │   └── Jenkinsfile
 ├── gitops/
 │   └── environments/
-│       ├── dev/
-│       └── prod/
+│       └── dev/
 ├── argocd/
 │   └── application.yaml
 └── docs/
@@ -61,7 +57,7 @@ Use an immutable image tag or digest for promotion. Avoid rebuilding the same so
 
 ### Configuration is versioned
 
-Helm values and GitOps manifests are reviewed as code. Environment differences are explicit instead of hidden inside pipeline scripts.
+Helm values and GitOps configuration are reviewed as code. Environment differences are explicit instead of hidden inside pipeline scripts.
 
 ### CI does not need cluster-admin access
 
@@ -70,3 +66,7 @@ The Jenkins stage that builds and tests an image should not require broad produc
 ### Rollback is a state change
 
 A rollback should be a deliberate change to the desired version, followed by the same reconciliation and health checks used for a normal release.
+
+### Promotion is explicit
+
+The sample repository contains a development environment. A production environment would use the same chart with a separately reviewed values change and an explicit promotion boundary rather than silently changing the artifact during deployment.
