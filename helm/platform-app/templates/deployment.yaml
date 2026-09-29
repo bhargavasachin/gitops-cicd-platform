@@ -17,12 +17,25 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
+      # Baseline pod hardening; the demo nginx image still runs as its
+      # default user, so runAsNonRoot stays out until the Dockerfile
+      # switches to a non-root base.
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
             - containerPort: 8080
               name: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
           resources:
 {{ toYaml .Values.resources | indent 12 }}
           readinessProbe:
