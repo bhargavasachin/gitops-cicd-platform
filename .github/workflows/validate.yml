@@ -32,5 +32,7 @@ jobs:
         run: helm lint helm/platform-app
       - name: Render Helm chart
         run: helm template platform-app helm/platform-app --namespace platform-demo
+      - name: Render Helm chart with dev values
+        run: helm template platform-app helm/platform-app --namespace platform-demo --values gitops/environments/dev/values-dev.yaml
       - name: Validate Docker build context
         run: docker build --check app
