@@ -10,11 +10,23 @@ pipeline {
   }
 
   environment {
-    IMAGE = "platform-app:${BUILD_NUMBER}"
     CONTAINER_NAME = "platform-app-${BUILD_NUMBER}"
   }
 
   stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+        script {
+          // Tag the image with the source revision so the exact artifact
+          // built here is what gets promoted. Never rebuild per environment.
+          env.IMAGE_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+          env.IMAGE = "platform-app:${env.IMAGE_TAG}"
+        }
+        echo "Building image ${env.IMAGE} from revision ${env.IMAGE_TAG}"
+      }
+    }
+
     stage('Validate') {
       steps {
         sh 'test -f helm/platform-app/Chart.yaml'
@@ -58,7 +70,7 @@ pipeline {
 
   post {
     always {
-      echo "Build ${BUILD_NUMBER} completed; retain the immutable image identifier for the GitOps promotion step."
+      echo "Build ${BUILD_NUMBER} produced image ${env.IMAGE}; promote this exact identifier, never a rebuilt tag."
     }
   }
 }
