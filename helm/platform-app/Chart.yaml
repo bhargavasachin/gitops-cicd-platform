@@ -1,0 +1,6 @@
+apiVersion: v2
+name: platform-app
+description: Small Helm chart used to demonstrate GitOps promotion patterns
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
