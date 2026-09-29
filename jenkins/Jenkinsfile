@@ -1,0 +1,40 @@
+pipeline {
+  agent any
+
+  environment {
+    IMAGE = "example.registry/platform-app"
+  }
+
+  stages {
+    stage('Validate') {
+      steps {
+        sh 'test -f helm/platform-app/Chart.yaml'
+      }
+    }
+
+    stage('Build') {
+      steps {
+        sh 'docker build -t ${IMAGE}:${BUILD_NUMBER} app'
+      }
+    }
+
+    stage('Test') {
+      steps {
+        sh 'echo "Run application and Helm tests here"'
+      }
+    }
+
+    stage('Publish') {
+      when { branch 'main' }
+      steps {
+        sh 'echo "Push immutable image tag ${BUILD_NUMBER} to the configured registry"'
+      }
+    }
+  }
+
+  post {
+    always {
+      echo 'Record build result and retain the image/version used by the release process.'
+    }
+  }
+}
