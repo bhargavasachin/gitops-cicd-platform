@@ -1,40 +1,64 @@
 pipeline {
   agent any
 
+  parameters {
+    booleanParam(
+      name: 'PUBLISH_IMAGE',
+      defaultValue: false,
+      description: 'Push the image after the build when the Jenkins agent has a configured registry credential.'
+    )
+  }
+
   environment {
-    IMAGE = "example.registry/platform-app"
+    IMAGE = "platform-app:${BUILD_NUMBER}"
+    CONTAINER_NAME = "platform-app-${BUILD_NUMBER}"
   }
 
   stages {
     stage('Validate') {
       steps {
         sh 'test -f helm/platform-app/Chart.yaml'
+        sh 'helm lint helm/platform-app'
       }
     }
 
     stage('Build') {
       steps {
-        sh 'docker build -t ${IMAGE}:${BUILD_NUMBER} app'
+        sh 'docker build -t ${IMAGE} app'
       }
     }
 
     stage('Test') {
       steps {
-        sh 'echo "Run application and Helm tests here"'
+        sh '''
+          set -eu
+          docker run -d --rm --name "${CONTAINER_NAME}" -p 18080:8080 "${IMAGE}"
+          cleanup() { docker stop "${CONTAINER_NAME}" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          for attempt in $(seq 1 15); do
+            if curl --fail --silent http://127.0.0.1:18080/health >/dev/null; then
+              curl --fail --silent http://127.0.0.1:18080/ready >/dev/null
+              exit 0
+            fi
+            sleep 2
+          done
+          echo 'Application health check did not become ready' >&2
+          exit 1
+        '''
       }
     }
 
     stage('Publish') {
-      when { branch 'main' }
+      when { expression { params.PUBLISH_IMAGE } }
       steps {
-        sh 'echo "Push immutable image tag ${BUILD_NUMBER} to the configured registry"'
+        echo 'Publishing is intentionally environment-specific. Configure the Jenkins registry credential and push policy for the target environment.'
       }
     }
   }
 
   post {
     always {
-      echo 'Record build result and retain the image/version used by the release process.'
+      echo "Build ${BUILD_NUMBER} completed; retain the immutable image identifier for the GitOps promotion step."
     }
   }
 }
