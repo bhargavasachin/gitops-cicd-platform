@@ -35,18 +35,31 @@ The important separation is between **building an artifact** and **promoting tha
 ```text
 .
 ├── app/
-│   └── Dockerfile
+│   ├── Dockerfile
+│   ├── index.html
+│   └── nginx.conf
 ├── helm/
 │   └── platform-app/
+│       ├── Chart.yaml
+│       ├── values.yaml
+│       └── templates/
+│           ├── deployment.yaml
+│           └── service.yaml
 ├── jenkins/
 │   └── Jenkinsfile
 ├── gitops/
 │   └── environments/
 │       └── dev/
+│           └── values-dev.yaml
 ├── argocd/
 │   └── application.yaml
-└── docs/
-    └── release-strategy.md
+├── docs/
+│   ├── architecture.md
+│   ├── promotion-and-rollback.md
+│   └── promotion-checklist.md
+└── .github/
+    └── workflows/
+        └── validate.yml
 ```
 
 ## Design principles
