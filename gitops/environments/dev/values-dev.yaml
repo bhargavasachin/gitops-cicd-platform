@@ -1,0 +1,5 @@
+replicaCount: 2
+
+image:
+  repository: example.registry/platform-app
+  tag: "replace-with-immutable-build-tag"
